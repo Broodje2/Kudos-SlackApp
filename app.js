@@ -1,6 +1,9 @@
 require("dotenv").config();
 const { App } = require("@slack/bolt");
 
+const url = "https://kudos-api.guusn.nl";
+// const url = "http://localhost:3000";
+
 /**
  * This sample slack application uses SocketMode.
  * For the companion getting started setup guide, see:
@@ -19,7 +22,7 @@ app.command("/getuser", async ({ ack, body, say }) => {
 
   try {
     const userId = body.user_id;
-    const response = await fetch(`http://127.0.0.1:3000/user/${userId}`);
+    const response = await fetch(`${url}/user/${userId}`);
     const data = await response.json();
 
     await say(`Username van ${userId}: ${data.username}`);
@@ -37,7 +40,7 @@ app.command("/registeraccount", async ({ ack, body, say }) => {
 
   try {
     // console.log('Sending account registration request...');
-    const response = await fetch(`http://127.0.0.1:3000/user`, {
+    const response = await fetch(`${url}/user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slack_name: username, slack_id: userId }),
@@ -208,7 +211,7 @@ app.view("give_kudos_modal", async ({ ack, body, view, client }) => {
 
   try {
     // console.log('Sending account registration request...');
-    const response = await fetch(`http://127.0.0.1:3000/transaction`, {
+    const response = await fetch(`${url}/transaction`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -257,7 +260,7 @@ app.command("/leaderboard", async ({ ack, body, client, say }) => {
       // const username = userInfo.user.profile.display_name || userInfo.user.name;
       // await say(`*• ${username}*\n Kudos: ${user.total_kudos}`);
 
-    const response = await fetch(`http://127.0.0.1:3000/leaderboard`);
+    const response = await fetch(`${url}/leaderboard`);
     const data = await response.json();
 
     const now = new Date();
@@ -316,7 +319,7 @@ app.event("member_joined_channel", async ({ event, client }) => {
         // Skip bot zelf
         if (slack_id === botUserId) continue;
 
-        await fetch("http://127.0.0.1:3000/user", {
+        await fetch(`${url}/user`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ slack_name, slack_id }),
@@ -334,7 +337,7 @@ app.event("member_joined_channel", async ({ event, client }) => {
         userInfo.user.profile.display_name || userInfo.user.name;
       const slack_id = joinedUserId;
 
-      const response = await fetch("http://127.0.0.1:3000/user", {
+      const response = await fetch(`${url}/user`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slack_name, slack_id }),
@@ -382,7 +385,7 @@ app.command("/sync", async ({ ack, body, client }) => {
       console.log(`Syncing user: ${username} (${userId})`);
 
       try {
-        await fetch("http://127.0.0.1:3000/user", {
+        await fetch(`${url}/user`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           // body: JSON.stringify({ slack_name, slack_id }),
