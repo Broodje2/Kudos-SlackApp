@@ -17,8 +17,6 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN,
 });
 
-saveArrayAsPNG();
-
 app.command("/getuser", async ({ ack, body, say }) => {
   await ack();
 
@@ -60,29 +58,88 @@ app.command("/registeraccount", async ({ ack, body, say }) => {
   }
 });
 
+const thanksArray = [
+  "Thank",
+  "Thanks",
+  "thx",
+  "tx",
+  "thnks",
+  "ty",
+  "appreciated",
+  "Thanks anyway",
+  "Cheers",
+  "Ta",
+  "I owe you",
+  "Iou",
+  "i.o.u",
+  "i.o.u.",
+  "lifesaver",
+  "grateful",
+  "thankful",
+  "thankfully",
+  "Bless you",
+  "Respect",
+  "Big love",
+  "Props",
+  "Appreciate",
+  "Love ya for this",
+  "That means a lot",
+  "That’s so kind of you",
+
+  "Dank",
+  "Dankjewel",
+  "Dankuwel",
+  "Bedankt",
+  "Hartelijk dank",
+  "waardeer",
+  "Ik stel het op prijs",
+  "dankbaar",
+  "merci",
+  "heel lief van je",
+  "Superlief",
+  "Top",
+  "Je bent een held",
+  "Je bent geweldig",
+];
+
 // Listens to incoming messages that contain "hello"
-app.message("hello", async ({ message, say }) => {
-  // say() sends a message to the channel where the event was triggered
-  await say({
-    blocks: [
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: `Hey there <@${message.user}>!`,
-        },
-        accessory: {
-          type: "button",
-          text: {
-            type: "plain_text",
-            text: "Click Me",
+app.message(async ({ message, say, ack }) => {
+  console.log("iemand stuurde een bericht");
+  try {
+    if (!message.text || message.subtype === "bot_message") return;
+    const raw = message && message.text ? message.text : "";
+    const msg = String(raw).toLowerCase();
+
+    const foundThanks = thanksArray.some((word) =>
+      msg.includes(word.toLowerCase())
+    );
+
+    if (foundThanks) {
+      // say() sends a message to the channel where the event was triggered
+      await say({
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `text: <${msg}> Hey there <@${message.user}>!`,
+            },
+            accessory: {
+              type: "button",
+              text: {
+                type: "plain_text",
+                text: "Click Me",
+              },
+              action_id: "button_click",
+            },
           },
-          action_id: "button_click",
-        },
-      },
-    ],
-    text: `Hey there <@${message.user}>!`,
-  });
+        ],
+        text: `Hey there <@${message.user}>!`,
+      });
+    }
+  } catch (err) {
+    console.error("Error in message handler:", err);
+  }
 });
 
 app.action("button_click", async ({ body, ack, say }) => {
@@ -258,27 +315,33 @@ app.command("/leaderboard", async ({ ack, body, client, say }) => {
   await ack();
 
   try {
-      // const userInfo = await client.users.info({ user: user.slack_id });
-      // const username = userInfo.user.profile.display_name || userInfo.user.name;
-      // await say(`*• ${username}*\n Kudos: ${user.total_kudos}`);
+    // const userInfo = await client.users.info({ user: user.slack_id });
+    // const username = userInfo.user.profile.display_name || userInfo.user.name;
+    // await say(`*• ${username}*\n Kudos: ${user.total_kudos}`);
 
     const response = await fetch(`${url}/leaderboard`);
     const data = await response.json();
 
     const now = new Date();
-    const toLocaleDateString = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const toLocaleDateString = now.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     await say({
-    blocks: [
-      {
-        type: "header",
-        text: {
-          type: "plain_text",
-          //  text: `Hey there <@${message.user}>!`,
-          text: `Leaderboard 🏆 - ${toLocaleDateString}`,
-        }
-      },
-      { type: "divider" },
-    ]
+      blocks: [
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            //  text: `Hey there <@${message.user}>!`,
+            text: `Leaderboard 🏆 - ${toLocaleDateString}`,
+          },
+        },
+        { type: "divider" },
+      ],
     });
     // await say(`Leaderboard:`);
     for (let i = 0; i < data.length; i++) {
@@ -297,27 +360,33 @@ app.command("/leaderboard", async ({ ack, body, client, say }) => {
   await ack();
 
   try {
-      // const userInfo = await client.users.info({ user: user.slack_id });
-      // const username = userInfo.user.profile.display_name || userInfo.user.name;
-      // await say(`*• ${username}*\n Kudos: ${user.total_kudos}`);
+    // const userInfo = await client.users.info({ user: user.slack_id });
+    // const username = userInfo.user.profile.display_name || userInfo.user.name;
+    // await say(`*• ${username}*\n Kudos: ${user.total_kudos}`);
 
     const response = await fetch(`${url}/leaderboard`);
     const data = await response.json();
 
     const now = new Date();
-    const toLocaleDateString = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const toLocaleDateString = now.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     await say({
-    blocks: [
-      {
-        type: "header",
-        text: {
-          type: "plain_text",
-          //  text: `Hey there <@${message.user}>!`,
-          text: `Leaderboard 🏆 - ${toLocaleDateString}`,
-        }
-      },
-      { type: "divider" },
-    ]
+      blocks: [
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            //  text: `Hey there <@${message.user}>!`,
+            text: `Leaderboard 🏆 - ${toLocaleDateString}`,
+          },
+        },
+        { type: "divider" },
+      ],
     });
     // await say(`Leaderboard:`);
     for (let i = 0; i < data.length; i++) {
