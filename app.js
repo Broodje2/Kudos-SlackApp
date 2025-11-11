@@ -434,7 +434,7 @@ app.action("button_click_kudos", async ({ ack, body, client }) => {
           element: {
             type: "conversations_select",
             action_id: "kudo_channel",
-            initial_conversation: "C09K5NA0PNU",
+            initial_conversation: "C09QPC7SPSR",
           },
         },
         {
