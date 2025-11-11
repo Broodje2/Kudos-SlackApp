@@ -267,7 +267,7 @@ function viewKudosModal(app) {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `🎉 *Kudos!* 🎉\n<@${destination_id}> has receAAAAived *${amount}* kudo(s) from <@${origin_id}>!\n\n*Reason:* ${reason}`,
+                text: `🎉 *Kudos!* 🎉\n<@${destination_id}> has received *${amount}* kudo(s) from <@${origin_id}>!\n\n*Reason:* ${reason}`,
               },
               accessory: {
                 type: "button",
