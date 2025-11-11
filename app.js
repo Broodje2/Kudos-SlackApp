@@ -220,22 +220,14 @@ app.command("/help", async ({ ack, say }) => {
         type: "header",
         text: {
           type: "plain_text",
-          text: "*All the commands*",
+          text: "All the commands",
         },
       },
       {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "_Here's a list of all available commands and what they do:_",
-        },
-      },
-      { type: "divider" },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "*• `/kudo`* - Send kudos to a teammates",
+          text: "Here's a list of all available commands and what they do:",
         },
       },
       { type: "divider" },
@@ -243,7 +235,48 @@ app.command("/help", async ({ ack, say }) => {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "*• `/leaderboard`* - Check the leaderboard",
+          text: "• /kudo - Send kudos to a teammates",
+          text: "• /givekudos - Send kudos to a teammates",
+        },
+      },
+      { type: "divider" },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "• /leaderboard - Check the leaderboard",
+        },
+      },
+      { type: "divider" },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "• /giveawaykudos -     Shows the amount of giveaway kudos of the user",
+        },
+      },
+       { type: "divider" },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "• /sync -     Sync all users with database",
+        },
+      },
+       { type: "divider" },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "• /getuser -     Get your user info from the database (for testing)",
+        },
+      },
+       { type: "divider" },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "• /registeraccount -         Register account if not done correctly in /sync (or for testing)",
         },
       },
     ],
@@ -317,6 +350,21 @@ app.command("/givekudos", async ({ ack, body, client }) => {
       ],
     },
   });
+});
+
+app.command("/giveawaykudos", async ({ ack, body, client, say }) => {
+  await ack();
+
+  try {
+    const response = await fetch(`${url}/user/${body.user_id}/kudos/giveaway`);
+    const data = await response.json();
+    const userInfo = await client.users.info({ user: body.user_id });
+    const username = userInfo.user.profile.display_name || userInfo.user.name;
+    await say(`${username} - giveaway-kudos: ${data.total_kudos}`);
+  } catch (error) {
+    console.error(error);
+    await say("Kon de user niet ophalen 😿");
+  }
 });
 
 // Handle modal submission
