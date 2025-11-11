@@ -122,13 +122,13 @@ app.message(async ({ message, say, ack }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `text: <${msg}> Hey there <@${message.user}>!`,
+              text: `Thank you detected!!! Give Kudos to the amazing person?`,
             },
             accessory: {
               type: "button",
               text: {
                 type: "plain_text",
-                text: "Click Me",
+                text: "Give Kudos",
               },
               action_id: "button_click",
             },
@@ -142,10 +142,73 @@ app.message(async ({ message, say, ack }) => {
   }
 });
 
-app.action("button_click", async ({ body, ack, say }) => {
+app.action("button_click", async ({ ack, body, client }) => {
   // Acknowledge the action
   await ack();
-  await say(`<@${body.user.id}> clicked the button`);
+
+  await client.views.open({
+    trigger_id: body.trigger_id,
+    view: {
+      type: "modal",
+      callback_id: "give_kudos_modal",
+      title: { type: "plain_text", text: "Give someone kudos" },
+      submit: { type: "plain_text", text: "Share" },
+      close: { type: "plain_text", text: "Cancel" },
+      blocks: [
+        {
+          type: "input",
+          block_id: "doer_of_good_deeds_block",
+          label: {
+            type: "plain_text",
+            text: "Whose deeds are deemed worthy of a kudo?",
+          },
+          element: {
+            type: "users_select",
+            action_id: "doer_of_good_deeds",
+            initial_user: "U09JQCAF8AV",
+          },
+        },
+        {
+          type: "input",
+          block_id: "kudo_channel_block",
+          label: {
+            type: "plain_text",
+            text: "Where should this message be shared?",
+          },
+          element: {
+            type: "conversations_select",
+            action_id: "kudo_channel",
+            initial_conversation: "C09K5NA0PNU",
+          },
+        },
+        {
+          type: "input",
+          block_id: "kudo_amount_block",
+          label: {
+            type: "plain_text",
+            text: "How many kudos do you want to give?",
+          },
+          element: {
+            type: "plain_text_input",
+            action_id: "kudo_points",
+            multiline: true,
+            initial_value: "1",
+          },
+        },
+        {
+          type: "input",
+          block_id: "kudo_message_block",
+          label: { type: "plain_text", text: "What would you like to say?" },
+          element: {
+            type: "plain_text_input",
+            action_id: "kudo_message",
+            multiline: true,
+            initial_value: "Test",
+          },
+        },
+      ],
+    },
+  });
 });
 
 app.command("/help", async ({ ack, say }) => {
@@ -223,7 +286,7 @@ app.command("/givekudos", async ({ ack, body, client }) => {
           element: {
             type: "conversations_select",
             action_id: "kudo_channel",
-            initial_conversation: "C09K5NA0PNU",
+            initial_conversation: "C09QPC7SPSR",
           },
         },
         {
@@ -291,7 +354,171 @@ app.view("give_kudos_modal", async ({ ack, body, view, client }) => {
       );
       await client.chat.postMessage({
         channel: channel,
-        text: `🎉 *Kudos!* 🎉\n<@${destination_id}> has received ${amount} kudo(s) from <@${origin_id}> \n Reason: ${reason}\n`,
+        text: `🎉 Kudos! 🎉`, // fallback text for notifications
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `🎉 *Kudos!* 🎉\n<@${destination_id}> has received *${amount}* kudo(s) from <@${origin_id}>!\n\n*Reason:* ${reason}`,
+            },
+            accessory: {
+              type: "button",
+              text: {
+                type: "plain_text",
+                text: "Also give kudos",
+              },
+              action_id: "button_click_kudos",
+              value: JSON.stringify({
+                to: destination_id,
+              }),
+            },
+          },
+        ],
+      });
+    } else {
+      console.error(`Failed: ${response.status} - ${responseData.error}`);
+      await client.chat.postMessage({
+        channel: channel,
+        text: `Kon de transactie niet uitvoeren: ${
+          responseData.error || "Onbekende fout"
+        } 😿`,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    await client.chat.postMessage({
+      channel: channel,
+      text: `Er is een fout opgetreden bij het uitvoeren van de transactie. 😿`,
+    });
+  }
+});
+
+app.action("button_click_kudos", async ({ ack, body, client }) => {
+  // Acknowledge the action
+  await ack();
+
+  const data = JSON.parse(body.actions[0].value);
+
+  const { to } = data;
+
+  await client.views.open({
+    trigger_id: body.trigger_id,
+    view: {
+      type: "modal",
+      callback_id: "also_give_kudos_modal",
+      title: { type: "plain_text", text: "Give someone kudos" },
+      submit: { type: "plain_text", text: "Share" },
+      close: { type: "plain_text", text: "Cancel" },
+      blocks: [
+        {
+          type: "input",
+          block_id: "doer_of_good_deeds_block",
+          label: {
+            type: "plain_text",
+            text: "Whose deeds are deemed worthy of a kudo?",
+          },
+          element: {
+            type: "users_select",
+            action_id: "doer_of_good_deeds",
+            initial_user: to,
+          },
+        },
+        {
+          type: "input",
+          block_id: "kudo_channel_block",
+          label: {
+            type: "plain_text",
+            text: "Where should this message be shared?",
+          },
+          element: {
+            type: "conversations_select",
+            action_id: "kudo_channel",
+            initial_conversation: "C09K5NA0PNU",
+          },
+        },
+        {
+          type: "input",
+          block_id: "kudo_amount_block",
+          label: {
+            type: "plain_text",
+            text: "How many kudos do you want to give?",
+          },
+          element: {
+            type: "plain_text_input",
+            action_id: "kudo_points",
+            multiline: true,
+            initial_value: "1",
+          },
+        },
+        {
+          type: "input",
+          block_id: "kudo_message_block",
+          label: { type: "plain_text", text: "What would you like to say?" },
+          element: {
+            type: "plain_text_input",
+            action_id: "kudo_message",
+            multiline: true,
+            initial_value: "Test",
+          },
+        },
+      ],
+    },
+  });
+});
+
+app.view("also_give_kudos_modal", async ({ ack, body, view, client }) => {
+  await ack();
+
+  const destination_id =
+    view.state.values.doer_of_good_deeds_block.doer_of_good_deeds.selected_user;
+  const channel =
+    view.state.values.kudo_channel_block.kudo_channel.selected_conversation;
+  const reason = view.state.values.kudo_message_block.kudo_message.value;
+  const amount = view.state.values.kudo_amount_block.kudo_points.value;
+  const origin_id = body.user.id;
+
+  try {
+    // console.log('Sending account registration request...');
+    const response = await fetch(`${url}/transaction`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        origin_slack_id: origin_id,
+        origin_kudos_type: "giveaway",
+        destination_slack_id: destination_id,
+        destination_kudos_type: "kudos",
+        amount: amount,
+        reason: reason,
+      }),
+    });
+
+    const responseData = await response.json();
+
+    if (response.ok) {
+      console.log(
+        `Transaction of ${amount} kudos from ${origin_id} to ${destination_id} recorded.`
+      );
+      await client.chat.postMessage({
+        channel: channel,
+        text: `🎉 Kudos! 🎉`, // fallback text for notifications
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `🎉 *Kudos!* 🎉\n<@${destination_id}> has received *${amount}* kudo(s) from <@${origin_id}>!\n\n*Reason:* ${reason}`,
+            },
+            accessory: {
+              type: "button",
+              text: {
+                type: "plain_text",
+                text: "Also give kudos",
+              },
+              action_id: "button_click_kudos",
+            },
+          },
+        ],
       });
     } else {
       console.error(`Failed: ${response.status} - ${responseData.error}`);
