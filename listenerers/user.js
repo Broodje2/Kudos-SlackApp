@@ -55,36 +55,50 @@ function sync(app) {
     try {
       const botUserId = (await client.auth.test()).user_id;
       const channelId = body.channel_id;
-
       console.log(`🔄 Syncing all members in channel ${channelId}...`);
 
-      // Haal alle leden van het kanaal
-      const membersResult = await client.conversations.members({
-        channel: channelId,
-      });
+      const membersResult = await client.conversations.members({ channel: channelId });
       const memberIds = membersResult.members;
       console.log(`Found ${memberIds.length} members in channel ${channelId}`);
-      console.log(memberIds);
+
       for (const userId of memberIds) {
-        // Skip bot zelf
         if (userId === botUserId) continue;
 
         const userInfo = await client.users.info({ user: userId });
-        const username =
-          userInfo.user.profile.display_name || userInfo.user.name;
-
+        const username = userInfo.user.profile.display_name || userInfo.user.name;
         console.log(`Syncing user: ${username} (${userId})`);
 
         try {
-          await fetch(`${url}/user`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            // body: JSON.stringify({ slack_name, slack_id }),
-            body: JSON.stringify({ slack_name: username, slack_id: userId }),
-          });
-          console.log(`✅ Synced ${slack_name} (${userId})`);
+          // Check of de user bestaat
+          const res = await fetch(`${url}/user/${userId}`);
+
+          if (res.ok) {
+            // Als user bestaat -> update naam
+            const updateRes = await fetch(`${url}/user`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slack_id: userId, new_name: username }),
+            });
+            if (updateRes.ok) {
+              console.log(`✅ Updated ${username} (${userId})`);
+            } else {
+              console.warn(`⚠️ Failed to update ${username} (${userId})`);
+            }
+          } else {
+            // Als user niet bestaat -> maak nieuwe user aan
+            const createRes = await fetch(`${url}/user`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slack_name: username, slack_id: userId }),
+            });
+            if (createRes.ok) {
+              console.log(`Created ${username} (${userId})`);
+            } else {
+              console.warn(`Failed to create ${username} (${userId})`);
+            }
+          }
         } catch (err) {
-          console.error(`❌ Failed to sync ${username} (${userId}):`, err);
+          console.error(`Error syncing ${username} (${userId}):`, err);
         }
       }
 
@@ -96,11 +110,12 @@ function sync(app) {
       console.error("⚠️ Error in /sync command:", error);
       await client.chat.postMessage({
         channel: body.channel_id,
-        text: `❌ Er is een fout opgetreden tijdens het synchroniseren. ${error.message}`,
+        text: `❌ Er is een fout opgetreden tijdens het synchroniseren: ${error.message}`,
       });
     }
   });
 }
+
 
 function autoSync(app) {
   app.event("member_joined_channel", async ({ event, client }) => {
