@@ -119,6 +119,7 @@ function sync(app) {
 
 function autoSync(app) {
   app.event("member_joined_channel", async ({ event, client }) => {
+    console.log("Member joined channel event:", event);
     try {
       const botUserId = (await client.auth.test()).user_id;
       const channelId = event.channel;
@@ -185,7 +186,7 @@ function autoSync(app) {
           text: `Alle leden van dit kanaal zijn toegevoegd aan de database.`,
         });
       } else {
-        // 👤 Gewone gebruiker is toegevoegd → voeg enkel die user toe
+        //Gewone gebruiker is toegevoegd -> voeg enkel die user toe
         const userInfo = await client.users.info({ user: joinedUserId });
         const slack_name =
           userInfo.user.profile.display_name || userInfo.user.name;
@@ -204,6 +205,10 @@ function autoSync(app) {
             text: `🎉 Welkom <@${slack_id}>! Je account is toegevoegd.`,
           });
         } else {
+           await client.chat.postMessage({
+            channel: channelId,
+            text: `🎉 Welkom <@${slack_id}> je account is toegevoegd/geupdate! .`,
+          });
           const errorText = await response.text();
           console.error(`Kon ${slack_name} niet toevoegen: ${errorText}`);
         }
