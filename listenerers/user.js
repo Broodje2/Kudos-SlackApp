@@ -122,38 +122,7 @@ function autoSync(app) {
           const username = userInfo.user.profile.display_name || userInfo.user.name;
           console.log(`Syncing user: ${username} (${userId})`);
 
-          try {
-            // Check of de user bestaat
-            const res = await fetch(`${url}/user/${userId}`);
-
-            if (res.ok) {
-              // Als user bestaat -> update naam
-              const updateRes = await fetch(`${url}/user`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ slack_id: userId, new_name: username }),
-              });
-              if (updateRes.ok) {
-                console.log(`Updated ${username} (${userId})`);
-              } else {
-                console.warn(`Failed to update ${username} (${userId})`);
-              }
-            } else {
-              // Als user niet bestaat -> maak nieuwe user aan
-              const createRes = await fetch(`${url}/user`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ slack_name: username, slack_id: userId }),
-              });
-              if (createRes.ok) {
-                console.log(`Created ${username} (${userId})`);
-              } else {
-                console.warn(`Failed to create ${username} (${userId})`);
-              }
-            }
-          } catch (err) {
-            console.error(`Error syncing ${username} (${userId}):`, err);
-          }
+          SyncUser(username, userId);
         }
 
         await client.chat.postMessage({
