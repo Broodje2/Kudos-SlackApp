@@ -79,6 +79,19 @@ function sync(app) {
   });
 }
 
+function userChanged(app) {
+  app.event("user_change", async ({ event }) => {
+    try {
+      const user = event.user;
+      const slack_name = user.profile.display_name || user.name;
+      const slack_id = user.id;
+
+      SyncUser(slack_name, slack_id);
+    } catch (error) {
+      console.error("Error in user_change event:", error);
+    }
+  });
+}
 
 function autoSync(app) {
   app.event("member_joined_channel", async ({ event, client }) => {
@@ -183,4 +196,6 @@ function SyncUser(slack_name, slack_id) {
   }
 }
 
-export { getUser, registerAccount, sync, autoSync };
+
+
+export { getUser, registerAccount, sync, autoSync, userChanged };

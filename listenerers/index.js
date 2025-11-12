@@ -1,5 +1,5 @@
 // import giveKudos from "./giveKudos.js";
-import {getUser, registerAccount, sync, autoSync } from "./user.js"
+import {getUser, registerAccount, sync, autoSync, userChanged } from "./user.js"
 import { kudosRecommendation, giveKudos, viewKudosModal, checkGiveawayKudos } from "./kudos.js"
 import { leaderboard } from "./leaderboard.js";
 
@@ -9,6 +9,7 @@ export default function registerListeners(app) {
   registerAccount(app);
   sync(app);
   autoSync(app);
+  userChanged(app);
 
   //kudos
   giveKudos(app);
