@@ -119,14 +119,12 @@ function sync(app) {
 
 function autoSync(app) {
   app.event("member_joined_channel", async ({ event, client }) => {
+    console.log("Member joined channel event:", event);
     try {
       const botUserId = (await client.auth.test()).user_id;
       const channelId = event.channel;
       const joinedUserId = event.user;
-
-      // 🧠 Check: bot of gewone gebruiker?
       if (joinedUserId === botUserId) {
-        // 🤖 BOT zelf is toegevoegd → sync alle channelleden
         console.log(
           `🤖 Bot joined channel ${channelId}, syncing all members...`
         );
@@ -142,27 +140,53 @@ function autoSync(app) {
           console.log(memberIds);
         });
 
-        for (const slack_id of memberIds) {
-          const userInfo = await client.users.info({ user: slack_id });
-          const slack_name =
-            userInfo.user.profile.display_name || userInfo.user.name;
+        for (const userId of memberIds) {
+        if (userId === botUserId) continue;
 
-          // Skip bot zelf
-          if (slack_id === botUserId) continue;
+        const userInfo = await client.users.info({ user: userId });
+        const username = userInfo.user.profile.display_name || userInfo.user.name;
+        console.log(`Syncing user: ${username} (${userId})`);
 
-          await fetch(`${url}/user`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ slack_name, slack_id }),
-          });
+        try {
+          // Check of de user bestaat
+          const res = await fetch(`${url}/user/${userId}`);
+
+          if (res.ok) {
+            // Als user bestaat -> update naam
+            const updateRes = await fetch(`${url}/user`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slack_id: userId, new_name: username }),
+            });
+            if (updateRes.ok) {
+              console.log(`Updated ${username} (${userId})`);
+            } else {
+              console.warn(`Failed to update ${username} (${userId})`);
+            }
+          } else {
+            // Als user niet bestaat -> maak nieuwe user aan
+            const createRes = await fetch(`${url}/user`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ slack_name: username, slack_id: userId }),
+            });
+            if (createRes.ok) {
+              console.log(`Created ${username} (${userId})`);
+            } else {
+              console.warn(`Failed to create ${username} (${userId})`);
+            }
+          }
+        } catch (err) {
+          console.error(`Error syncing ${username} (${userId}):`, err);
         }
+      }
 
         await client.chat.postMessage({
           channel: channelId,
-          text: `✅ Alle leden van dit kanaal zijn toegevoegd aan de database.`,
+          text: `Alle leden van dit kanaal zijn toegevoegd aan de database.`,
         });
       } else {
-        // 👤 Gewone gebruiker is toegevoegd → voeg enkel die user toe
+        //Gewone gebruiker is toegevoegd -> voeg enkel die user toe
         const userInfo = await client.users.info({ user: joinedUserId });
         const slack_name =
           userInfo.user.profile.display_name || userInfo.user.name;
@@ -175,18 +199,22 @@ function autoSync(app) {
         });
 
         if (response.ok) {
-          console.log(`✅ Added user ${slack_name} (${slack_id})`);
+          console.log(`Added user ${slack_name} (${slack_id})`);
           await client.chat.postMessage({
             channel: channelId,
             text: `🎉 Welkom <@${slack_id}>! Je account is toegevoegd.`,
           });
         } else {
+           await client.chat.postMessage({
+            channel: channelId,
+            text: `🎉 Welkom <@${slack_id}> je account is toegevoegd/geupdate! .`,
+          });
           const errorText = await response.text();
-          console.error(`❌ Kon ${slack_name} niet toevoegen: ${errorText}`);
+          console.error(`Kon ${slack_name} niet toevoegen: ${errorText}`);
         }
       }
     } catch (error) {
-      console.error("⚠️ Error in member_joined_channel:", error);
+      console.error("Error in member_joined_channel:", error);
     }
   });
 }
