@@ -1,70 +1,5 @@
 const url = "https://kudos-api.guusn.nl";
 
-// function getUser(app) {
-//   app.command("/getuser", async ({ ack, body, say }) => {
-//     await ack();
-
-//     try {
-//       const userId = body.user_id;
-//       const response = await fetch(`${url}/user/${userId}`);
-//       const data = await response.json();
-
-//       await say(`Username van ${userId}: ${data.username} 😺`);
-//     } catch (error) {
-//       console.error(error);
-//       await say("Kon de user niet ophalen 😿");
-//     }
-//   });
-// }
-
-// function registerAccount(app) {
-//   app.command("/registeraccount", async ({ ack, body, say }) => {
-//     await ack();
-//     const username = body.user_name;
-//     const userId = body.user_id;
-//     console.log(`Registering account for ${username} with ID ${userId}`);
-
-//     try {
-//       SyncUser(username, userId);
-//       await say(`Account geregistreerd voor ${username} 🎉`);
-//     } catch (error) {
-//       console.error(error);
-//       await say("Kon het account niet registreren 😿");
-//     }
-//   });
-// }
-
-// function sync(app) {
-//   app.command("/sync", async ({ ack, body, client }) => {
-//     await ack();
-
-//     try {
-//       const botUserId = (await client.auth.test()).user_id;
-//       const channelId = body.channel_id;
-//       console.log(`🔄 Syncing all members in channel ${channelId}...`);
-
-//       const membersResult = await client.conversations.members({ channel: channelId });
-//       const memberIds = membersResult.members;
-//       console.log(`Found ${memberIds.length} members in channel ${channelId}`);
-
-//       for (const userId of memberIds) {
-//         if (userId === botUserId) continue;
-
-//         const userInfo = await client.users.info({ user: userId });
-//         const username = userInfo.user.profile.display_name || userInfo.user.name;
-
-//         SyncUser(username, userId);
-//       }
-//       await client.chat.postMessage({
-//         channel: channelId,
-//         text: `Alle leden van dit kanaal zijn toegevoegd/geupdate.`,
-//       });
-//     } catch (error) {
-//       console.error("Error in /sync command:", error);
-//     }
-//   });
-// }
-
 function userChanged(app) {
   app.event("user_change", async ({ event }) => {
     try {
@@ -138,5 +73,4 @@ function SyncUser(slack_name, slack_id) {
   }
 }
 
-// export { getUser, registerAccount, sync, autoSync, userChanged };
 export {autoSync, userChanged };
