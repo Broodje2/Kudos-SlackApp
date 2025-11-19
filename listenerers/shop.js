@@ -13,6 +13,7 @@ function shop(app) {
     var userData = [];
     var username = "";
     var selectedButton = [];
+    var channelId = "";
 
     try {
       const response = await fetch(`${url}/shop/products`);
@@ -21,6 +22,8 @@ function shop(app) {
       console.error(error);
       await say("Kon de shop products niet ophalen 😿");
     }
+
+    channelId = body.channel_id;
 
     try {
       const response = await fetch(`${url}/user/${body.user_id}/kudos/kudos`);
@@ -172,7 +175,6 @@ function shop(app) {
           await ack();
 
           const metadata = JSON.parse(view.private_metadata);
-          const channelId = metadata.channel_id;
           console.log("Channel ID from metadata:", channelId);
           const userId = body.user.id;
 
@@ -195,7 +197,7 @@ function shop(app) {
 
               if (response.ok) {
                 await client.chat.postMessage({
-                  channel: body.channel.id,
+                  channel: channelId,
                   user: body.user.id,
                   text: `🎉 You bought *${selectedButton.name}* from the shop!`,
                 });
