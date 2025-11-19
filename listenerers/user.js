@@ -51,27 +51,36 @@ function autoSync(app) {
   });
 }
 
-function SyncUser(slack_name, slack_id) {
+async function SyncUser(slack_name, slack_id) {
   console.log(`Syncing user: ${slack_name} (${slack_id})`);
-  const userExists = fetch(`${url}/user/${slack_id}`).then((res) => res.ok);
-  if (userExists) {
-    // Update user
-    fetch(`${url}/user`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slack_id, new_name: slack_name }),
-    });
-    console.log(`User ${slack_name} updated.`);
-  } else {
-    // Create user
+
+  const res = await fetch(`${url}/user/${slack_id}`);
+
+  if (res.status === 404) {
     console.log(`User ${slack_name} does not exist. Creating user...`);
-    fetch(`${url}/user`, {
+    await fetch(`${url}/user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slack_name, slack_id }),
+      body: JSON.stringify({slack_id, slack_name}),
     });
     console.log(`User ${slack_name} created.`);
+    return;
   }
+
+  if (!res.ok) {
+    console.error(`Error fetching user: ${res.status}`);
+    return;
+  }
+
+  const data = await res.json();
+  console.log(`User exists:`, data);
+
+  await fetch(`${url}/user`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ slack_id, slack_name }),
+  });
+  console.log(`User ${slack_name} updated.`);
 }
 
 export { autoSync, userChanged };
