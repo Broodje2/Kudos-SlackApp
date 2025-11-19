@@ -1,3 +1,5 @@
+const url = "https://kudos-api.guusn.nl";
+
 function leaderboard(app) {
   app.command("/leaderboard", async ({ ack, body, client, say }) => {
     await ack();
