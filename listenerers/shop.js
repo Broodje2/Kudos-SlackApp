@@ -171,6 +171,11 @@ function shop(app) {
         app.view("shop_modal", async ({ ack, body, view, client }) => {
           await ack();
 
+          const metadata = JSON.parse(view.private_metadata);
+          const channelId = metadata.channel_id;
+          console.log("Channel ID from metadata:", channelId);
+          const userId = body.user.id;
+
           if (!selectedButton) return;
 
           if (userData.total_kudos >= selectedButton.price) {
@@ -196,7 +201,7 @@ function shop(app) {
                 });
               } else {
                 await client.chat.postMessage({
-                  channel: body.channel.id,
+                  channel: channelId,
                   user: body.user.id,
                   text: `⚠️ Transaction failed to buy *${selectedButton.name}* from the shop.`,
                 });
@@ -204,14 +209,14 @@ function shop(app) {
             } catch (error) {
               console.error("Error during transaction:", error);
               await client.chat.postMessage({
-                channel: body.channel.id,
+                channel: channelId,
                 user: body.user.id,
                 text: `⚠️ Something went wrong with buying the *${selectedButton.name}* from the shop.`,
               });
             }
           } else {
             await client.chat.postMessage({
-              channel: body.channel.id,
+              channel: channelId,
               user: body.user.id,
               text: `⚠️ You don't have sufficient balance to buy the *${selectedButton.name}* from the shop.`,
             });
