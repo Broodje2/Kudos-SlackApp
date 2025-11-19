@@ -64,6 +64,7 @@ function SyncUser(slack_name, slack_id) {
     console.log(`User ${slack_name} updated.`);
   } else {
     // Create user
+    console.log(`User ${slack_name} does not exist. Creating user...`);
     fetch(`${url}/user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -73,4 +74,4 @@ function SyncUser(slack_name, slack_id) {
   }
 }
 
-export {autoSync, userChanged };
+export { autoSync, userChanged };
