@@ -10,6 +10,7 @@ function shop(app) {
     ];
     var userData = [];
     var username = "";
+    var selectedButton = [];
 
     try {
       const response = await fetch(`${url}/shop/products`);
@@ -60,8 +61,13 @@ function shop(app) {
                 type: "plain_text",
                 text: `${item.name} - ${item.price} kudos`,
               },
-              value: JSON.stringify({ id: item.name, price: item.price }),
-              action_id: `shop_item_${item.id}`,
+              value: JSON.stringify({
+                name: item.name,
+                price: item.price,
+                id: item.id,
+                description: item.description,
+              }),
+              action_id: `shop_item_${item.name}`,
             })),
           },
         ],
@@ -87,10 +93,10 @@ function shop(app) {
             : []
         );
 
-        if (selected.has(clicked.id)) {
-          selected.delete(clicked.id);
+        if (selected.has(clicked.name)) {
+          selected.delete(clicked.name);
         } else {
-          selected.add(clicked.id);
+          selected.add(clicked.name);
         }
 
         // Update buttons to reflect selection state
@@ -99,15 +105,17 @@ function shop(app) {
         );
         const updatedButtons = buttonsBlock.elements.map((item) => {
           const data = JSON.parse(item.value);
-          const isSelected = selected.has(data.id);
-          console.log("isSelected", isSelected);
+          const isSelected = selected.has(data.name);
+          if (isSelected) {
+            selectedButton = data;
+          }
           return {
             ...item,
             text: {
               type: "plain_text",
               text: isSelected
-                ? `✅ ${data.id} - ${data.price} kudos`
-                : `${data.id} - ${data.price} kudos`,
+                ? `✅ ${data.name} - ${data.price} kudos`
+                : `${data.name} - ${data.price} kudos`,
             },
             style: isSelected ? "primary" : undefined,
           };
@@ -135,6 +143,36 @@ function shop(app) {
       } catch (error) {
         console.error(error);
       }
+
+      app.view("shop_modal", async ({ ack, body, view, client }) => {
+        await ack(); // Always ack view submissions
+
+        try {
+          if (userData.total_kudos >= selectedButton.price) {
+            
+            const response = await fetch(`${url}/transaction`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                origin_slack_id: userData.slack_id,
+                origin_kudos_type: "giveaway",
+                destination_slack_id: destination_id,
+                // destination_type: shop,
+                destination_kudos_type: "kudos",
+                amount: amount,
+                reason: reason,
+              }),
+            });
+
+            if (response.ok) { } else {}
+
+          } else {
+            console.log("Not enough money");
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      });
 
       // Update the shop_selection section with a list of selected item ids
       // const selectedListText =
