@@ -1,6 +1,11 @@
 const url = "https://kudos-api.guusn.nl";
 
 function shop(app) {
+  var userData = [];
+  var username = "";
+  var selectedButton = [];
+  var channelId = "";
+
   app.command("/shop", async ({ ack, body, client, say }) => {
     await ack();
 
@@ -9,11 +14,6 @@ function shop(app) {
       { id: "music", label: "🎵 Music", price: 20 },
       { id: "activity", label: "📍 Activity", price: 50 },
     ];
-
-    var userData = [];
-    var username = "";
-    var selectedButton = [];
-    var channelId = "";
 
     try {
       const response = await fetch(`${url}/shop/products`);
@@ -40,7 +40,6 @@ function shop(app) {
       console.error(error);
       await say("Kon de user niet ophalen 😿");
     }
-
 
     await client.views.open({
       trigger_id: body.trigger_id,
@@ -85,9 +84,32 @@ function shop(app) {
         ],
       },
     });
+  });
 
-    app.action(/shop_item_/, async ({ ack, body, view, client }) => {
-      await ack();
+  app.action(/shop_item_/, async ({ ack, body, view, client }) => {
+    await ack();
+
+    try {
+      const clicked = JSON.parse(body.actions[0].value);
+      const view = body.view;
+      const metadata = view.private_metadata
+        ? JSON.parse(view.private_metadata)
+        : { selected: [] };
+
+      // normalize metadata.selected to a Set of ids (primitives), not objects
+      const selected = new Set(
+        Array.isArray(metadata.selected)
+          ? metadata.selected.map((s) =>
+              s && typeof s === "object" ? s.id : s
+            )
+          : []
+      );
+
+      if (selected.has(clicked.name)) {
+        selected.delete(clicked.name);
+      } else {
+        selected.add(clicked.name);
+      }
 
       try {
         const clicked = JSON.parse(body.actions[0].value);
@@ -96,12 +118,12 @@ function shop(app) {
           ? JSON.parse(view.private_metadata)
           : { selected: [] };
 
-        // normalize metadata.selected to a Set of ids (primitives), not objects
+        // normalize metadata.selected to a Set of ids
         const selected = new Set(
           Array.isArray(metadata.selected)
             ? metadata.selected.map((s) =>
-              s && typeof s === "object" ? s.id : s
-            )
+                s && typeof s === "object" ? s.id : s
+              )
             : []
         );
 
@@ -109,127 +131,122 @@ function shop(app) {
           selected.delete(clicked.name);
         } else {
           selected.add(clicked.name);
+          selectedButton = clicked; // track the latest selected item
         }
 
-        try {
-          const clicked = JSON.parse(body.actions[0].value);
-          const view = body.view;
-          const metadata = view.private_metadata
-            ? JSON.parse(view.private_metadata)
-            : { selected: [] };
-
-          // normalize metadata.selected to a Set of ids
-          const selected = new Set(
-            Array.isArray(metadata.selected)
-              ? metadata.selected.map((s) => (s && typeof s === "object" ? s.id : s))
-              : []
-          );
-
-          if (selected.has(clicked.name)) {
-            selected.delete(clicked.name);
-          } else {
-            selected.add(clicked.name);
-            selectedButton = clicked; // track the latest selected item
-          }
-
-          // Update buttons to reflect selection state
-          const buttonsBlock = view.blocks.find((b) => b.block_id === "shop_buttons");
-          const updatedButtons = buttonsBlock.elements.map((item) => {
-            const data = JSON.parse(item.value);
-            const isSelected = selected.has(data.name);
-            return {
-              ...item,
-              text: {
-                type: "plain_text",
-                text: isSelected
-                  ? `✅ ${data.name} - ${data.price} kudos`
-                  : `${data.name} - ${data.price} kudos`,
-              },
-              style: isSelected ? "primary" : undefined,
-            };
-          });
-
-          const updatedBlocks = view.blocks.map((block) =>
-            block.block_id === "shop_buttons" ? { ...block, elements: updatedButtons } : block
-          );
-
-          await client.views.update({
-            view_id: view.id,
-            hash: view.hash,
-            view: {
-              type: "modal",
-              callback_id: view.callback_id,
-              title: view.title,
-              close: view.close,
-              submit: view.submit,
-              private_metadata: JSON.stringify({ selected: [...selected] }),
-              blocks: updatedBlocks,
+        // Update buttons to reflect selection state
+        const buttonsBlock = view.blocks.find(
+          (b) => b.block_id === "shop_buttons"
+        );
+        const updatedButtons = buttonsBlock.elements.map((item) => {
+          const data = JSON.parse(item.value);
+          const isSelected = selected.has(data.name);
+          return {
+            ...item,
+            text: {
+              type: "plain_text",
+              text: isSelected
+                ? `✅ ${data.name} - ${data.price} kudos`
+                : `${data.name} - ${data.price} kudos`,
             },
-          });
-        } catch (error) {
-          console.error(error);
-        }
-
-        // 3️⃣ Handle modal submission (Buy)
-        app.view("shop_modal", async ({ ack, body, view, client }) => {
-          await ack();
-
-          const metadata = JSON.parse(view.private_metadata);
-          console.log("Channel ID from metadata:", channelId);
-          const userId = body.user.id;
-
-          if (!selectedButton) return;
-
-          if (userData.total_kudos >= selectedButton.price) {
-            try {
-              const response = await fetch(`${url}/transaction`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  origin_slack_id: userData.slack_id,
-                  origin_kudos_type: "kudos",
-                  destination_slack_id: null,
-                  destination_kudos_type: "kudos",
-                  amount: selectedButton.price,
-                  reason: "buying " + selectedButton.name + " from shop",
-                }),
-              });
-
-              if (response.ok) {
-                await client.chat.postMessage({
-                  channel: channelId,
-                  user: body.user.id,
-                  text: `🎉 You bought *${selectedButton.name}* from the shop!`,
-                });
-              } else {
-                await client.chat.postMessage({
-                  channel: channelId,
-                  user: body.user.id,
-                  text: `⚠️ Transaction failed to buy *${selectedButton.name}* from the shop.`,
-                });
-              }
-            } catch (error) {
-              console.error("Error during transaction:", error);
-              await client.chat.postMessage({
-                channel: channelId,
-                user: body.user.id,
-                text: `⚠️ Something went wrong with buying the *${selectedButton.name}* from the shop.`,
-              });
-            }
-          } else {
-            await client.chat.postMessage({
-              channel: channelId,
-              user: body.user.id,
-              text: `⚠️ You don't have sufficient balance to buy the *${selectedButton.name}* from the shop.`,
-            });
-          }
+            style: isSelected ? "primary" : undefined,
+          };
         });
-      }
-      catch (error) {
+
+        const updatedBlocks = view.blocks.map((block) =>
+          block.block_id === "shop_buttons"
+            ? { ...block, elements: updatedButtons }
+            : block
+        );
+
+        await client.views.update({
+          view_id: view.id,
+          hash: view.hash,
+          view: {
+            type: "modal",
+            callback_id: view.callback_id,
+            title: view.title,
+            close: view.close,
+            submit: view.submit,
+            private_metadata: JSON.stringify({ selected: [...selected] }),
+            blocks: updatedBlocks,
+          },
+        });
+      } catch (error) {
         console.error(error);
       }
-    });
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  // 3️⃣ Handle modal submission (Buy)
+  app.view("shop_modal", async ({ ack, body, view, client }) => {
+    await ack();
+
+    const metadata = JSON.parse(view.private_metadata);
+    const userId = body.user.id;
+
+    if (!selectedButton) return;
+
+    if (userData.total_kudos >= selectedButton.price) {
+      try {
+        const response = await fetch(`${url}/transaction`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            origin_slack_id: userData.slack_id,
+            origin_kudos_type: "kudos",
+            destination_slack_id: null,
+            destination_kudos_type: "kudos",
+            amount: selectedButton.price,
+            reason: "buying " + selectedButton.name + " from shop",
+          }),
+        });
+
+        if (response.ok) {
+          await client.chat.postMessage({
+            channel: channelId,
+            text: `🎉 <@${body.user.id}> bought *${selectedButton.name}* from the shop!`,
+            blocks: [
+              {
+                type: "section",
+                text: {
+                  type: "mrkdwn",
+                  text: `🎉 <@${body.user.id}> bought *${selectedButton.name}* from the shop!`,
+                },
+              },
+            ],
+            // user: body.user.id,
+            // text: `🎉 You bought *${selectedButton.name}* from the shop!`,
+          });
+        } else {
+          await client.chat.postMessage({
+            channel: channelId,
+            // user: body.user.id,
+            text: `⚠️ Transaction failed to buy *${selectedButton.name}* from the shop.`,
+          });
+        }
+      } catch (error) {
+        console.error("Error during transaction:", error);
+        await client.chat.postMessage({
+          channel: channelId,
+          // user: body.user.id,
+          text: `⚠️ Something went wrong with buying the *${selectedButton.name}* from the shop.`,
+        });
+      }
+    } else {
+      try {
+        await client.chat.postMessage({
+          channel: channelId,
+          // user: body.user.id,
+          text: `⚠️ You don't have sufficient balance to buy the *${selectedButton.name}* from the shop.`,
+        });
+      } catch (error) {
+        console.error("Error sending insufficient balance message:", error);
+      }
+    }
   });
 }
 
-  export { shop };
+export { shop };
