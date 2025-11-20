@@ -205,7 +205,7 @@ function shop(app) {
         });
 
         if (response.ok) {
-          await client.chat.postMessage({
+          await client.chat.postEphemeral({
             channel: channelId,
             text: `🎉 <@${body.user.id}> bought *${selectedButton.name}* from the shop!`,
             blocks: [
