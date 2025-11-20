@@ -221,25 +221,25 @@ function shop(app) {
             // text: `🎉 You bought *${selectedButton.name}* from the shop!`,
           });
         } else {
-          await client.chat.postMessage({
+          await client.chat.postEphemeral({
             channel: channelId,
-            // user: body.user.id,
+            user: body.user.id,
             text: `⚠️ Transaction failed to buy *${selectedButton.name}* from the shop.`,
           });
         }
       } catch (error) {
         console.error("Error during transaction:", error);
-        await client.chat.postMessage({
+        await client.chat.postEphemeral({
           channel: channelId,
-          // user: body.user.id,
+          user: body.user.id,
           text: `⚠️ Something went wrong with buying the *${selectedButton.name}* from the shop.`,
         });
       }
     } else {
       try {
-        await client.chat.postMessage({
+        await client.chat.postEphemeral({
           channel: channelId,
-          // user: body.user.id,
+          user: body.user.id,
           text: `⚠️ You don't have sufficient balance to buy the *${selectedButton.name}* from the shop.`,
         });
       } catch (error) {
