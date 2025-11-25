@@ -16,7 +16,7 @@ async function aiChecker(userMessage) {
             - Do NOT say "The message describes gratitude"
             - Respond as if you are acknowledging and appreciating the gratitude expressed.
             - The message must be short (1-2 sentences).
-            - If the message is in Dutch, respond in Dutch. Otherwise, respond in English.
+            - Respond in the language the question is asked.
             - Mention the reason for appreciation in your message if it is clear in the message.
             - If a name is mentioned in the message, include that name in your message.
             - Use emoticons to make the message friendly.
