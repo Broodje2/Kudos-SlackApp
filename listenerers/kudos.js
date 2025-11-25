@@ -1,6 +1,6 @@
 const url = "https://kudos-api.guusn.nl";
 
-import { aiChecker } from "./ai";
+import { aiChecker } from "./ai.js";
 
 function kudosRecommendation(app) {
   // Listens to incoming messages that contain "hello"
@@ -9,11 +9,10 @@ function kudosRecommendation(app) {
       if (!message.text || message.subtype === "bot_message") return;
       const raw = message && message.text ? message.text : "";
       const msg = String(raw).toLowerCase();
-
-      aiChecker(app);
+      const aiAnswer = await aiChecker(message.text);
       console.log("AI Answer:", aiAnswer);
 
-      if (foundThanks) {
+      if (aiAnswer !== "no") {
         // say() sends a message to the channel where the event was triggered
         await say({
           blocks: [
@@ -21,7 +20,7 @@ function kudosRecommendation(app) {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `Thank you detected!!! Give Kudos to the amazing person?`,
+                text: `${aiAnswer}`,
               },
               accessory: {
                 type: "button",

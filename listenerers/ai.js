@@ -1,18 +1,12 @@
 import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function aiChecker(app) {
-  app.message(async ({ message, say }) => {
-    try {
-      // Slack sometimes sends bot messages; skip those
-      if (!message.text || message.subtype === "bot_message") return;
-
-      const userMessage = message.text;
-
-      // Ask AI if the message is a thank-you
-      const response = await openai.responses.create({
-        model: "gpt-4.1-mini",
-        input: `
+async function aiChecker(userMessage) {
+    if (!userMessage) return "no";
+  // Ask AI if the message is a thank-you
+  const response = await openai.responses.create({
+    model: "gpt-4.1-mini",
+    input: `
         Your task is to detect gratitude in a message and generate a friendly message that encourages others to give kudos.
 
         Rules:
@@ -30,16 +24,10 @@ function aiChecker(app) {
 
         Message: "${userMessage}"
       `,
-      });
-
-      const aiAnswer = response.output_text.trim().toLowerCase();
-    } catch (error) {
-      console.error("Error in AI checker:", error);
-    }
-    return (
-        aiAnswer.output_text
-    )
   });
+
+  const aiAnswer = response.output_text.trim();
+  return aiAnswer;
 }
 
 export { aiChecker };
