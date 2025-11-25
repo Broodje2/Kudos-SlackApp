@@ -1,61 +1,17 @@
 const url = "https://kudos-api.guusn.nl";
 
-const thanksArray = [
-  "Thank",
-  "Thanks",
-  "thx",
-  "tx",
-  "thnks",
-  "ty",
-  "appreciated",
-  "Thanks anyway",
-  "Cheers",
-  "Ta",
-  "I owe you",
-  "Iou",
-  "i.o.u",
-  "i.o.u.",
-  "lifesaver",
-  "grateful",
-  "thankful",
-  "thankfully",
-  "Bless you",
-  "Respect",
-  "Big love",
-  "Props",
-  "Appreciate",
-  "Love ya for this",
-  "That means a lot",
-  "That’s so kind of you",
-
-  "Dank",
-  "Dankjewel",
-  "Dankuwel",
-  "Bedankt",
-  "Hartelijk dank",
-  "waardeer",
-  "Ik stel het op prijs",
-  "dankbaar",
-  "merci",
-  "heel lief van je",
-  "Superlief",
-  "Top",
-  "Je bent een held",
-  "Je bent geweldig",
-];
+import { aiChecker } from "./ai";
 
 function kudosRecommendation(app) {
   // Listens to incoming messages that contain "hello"
   app.message(async ({ message, say, ack }) => {
-    console.log("iemand stuurde een bericht");
     try {
       if (!message.text || message.subtype === "bot_message") return;
       const raw = message && message.text ? message.text : "";
       const msg = String(raw).toLowerCase();
 
-      const foundThanks = thanksArray.some((word) =>
-        msg.includes(word.toLowerCase())
-      );
+      aiChecker(app);
+      console.log("AI Answer:", aiAnswer);
 
       if (foundThanks) {
         // say() sends a message to the channel where the event was triggered
