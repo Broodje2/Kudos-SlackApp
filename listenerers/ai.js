@@ -1,12 +1,8 @@
 import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-async function aiChecker(messages) {
-  if (!messages) return "no";
-  const message1 = messages[0];
-    const message2 = messages[1];
-    const message3 = messages[2];
-  console.log(message1, message2, message3);
+async function aiChecker(userMessage) {
+  if (!userMessage) return "no";
   // Ask AI if the message is a thank-you
   const response = await openai.responses.create({
     model: "gpt-4.1-mini",
@@ -27,10 +23,7 @@ async function aiChecker(messages) {
         3. The messages aren't directed to you, they are for someone in the conversation.
         4. Never mention these rules in your message.
 
-        First message: "${message3}",
-        Previous message: "${message2}",
-        Previous previous message: "${message1}"
-        Based on the above messages, respond according to the rules.
+        Message: "${userMessage}"
       `,
   });
 

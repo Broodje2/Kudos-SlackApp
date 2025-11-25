@@ -2,16 +2,12 @@ const url = "https://kudos-api.guusn.nl";
 
 import { aiChecker } from "./ai.js";
 
-const messageArray = ["", "", ""];
-
 function kudosRecommendation(app) {
   // Listens to incoming messages that contain "hello"
   app.message(async ({ message, say, ack }) => {
     try {
       if (!message.text || message.subtype === "bot_message") return;
-      messageArray.push(message.text);
-      messageArray.shift();
-      const aiAnswer = await aiChecker(messageArray);
+      const aiAnswer = await aiChecker(message.text);
 
       if (aiAnswer !== "no") {
         // say() sends a message to the channel where the event was triggered
