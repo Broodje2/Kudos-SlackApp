@@ -2,6 +2,7 @@ import {autoSync, userChanged } from "./user.js"
 import { kudosRecommendation, giveKudos, viewKudosModal, checkGiveawayKudos } from "./kudos.js"
 import { leaderboard } from "./leaderboard.js";
 import { shop } from "./shop.js";
+import { aiChecker } from "./ai.js"
 
 export default function registerListeners(app) {
   //user
@@ -19,4 +20,9 @@ export default function registerListeners(app) {
 
   //Shop
   shop(app);
+
+  //AI
+  aiChecker(app);
 }
+
+  
