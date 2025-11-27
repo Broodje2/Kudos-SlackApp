@@ -20,30 +20,40 @@ function leaderboard(app) {
         hour: "2-digit",
         minute: "2-digit",
       });
-      await say({
+      await client.chat.postEphemeral({
+        channel: body.channel_id,
+        user: body.user_id,
         blocks: [
           {
             type: "header",
             text: {
               type: "plain_text",
-              //  text: `Hey there <@${message.user}>!`,
               text: `Leaderboard 🏆 - ${toLocaleDateString}`,
             },
           },
           { type: "divider" },
         ],
+        text: "Leaderboard",
       });
-      // await say(`Leaderboard:`);
+
       for (let i = 0; i < data.length; i++) {
         const userInfo = await client.users.info({ user: data[i].slack_id });
-        console.log(userInfo);
         const username =
           userInfo.user.profile.display_name || userInfo.user.name;
-        await say(`${username} - Kudos: ${data[i].total_kudos}`);
+
+        await client.chat.postEphemeral({
+          channel: body.channel_id,
+          user: body.user_id,
+          text: `${username} - Kudos: ${data[i].total_kudos}`,
+        });
       }
     } catch (error) {
       console.error(error);
-      await say("Kon de user niet ophalen 😿");
+      await client.chat.postEphemeral({
+        channel: body.channel_id,
+        user: body.user_id,
+        text: "Kon de user niet ophalen 😿",
+      });
     }
   });
 }
