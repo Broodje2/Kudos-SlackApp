@@ -98,17 +98,26 @@ function kudosRecommendation(app) {
           },
           {
             type: "input",
-            block_id: "kudo_amount_block",
+            block_id: "numeric_select",
             label: {
               type: "plain_text",
               text: "How many kudos do you want to give?",
             },
             element: {
-              type: "plain_text_input",
-              action_id: "kudo_points",
-              multiline: true,
-              initial_value: "1",
-            },
+              type: "static_select",
+              action_id: "number_pick",
+              placeholder: {
+                type: "plain_text",
+                text: "How many kudos do you want to give?"
+              },
+              options: [
+                { text: { type: "plain_text", text: "1" }, value: "1" },
+                { text: { type: "plain_text", text: "2" }, value: "2" },
+                { text: { type: "plain_text", text: "3" }, value: "3" },
+                { text: { type: "plain_text", text: "4" }, value: "4" },
+                { text: { type: "plain_text", text: "5" }, value: "5" }
+              ]
+            }
           },
           {
             type: "input",
@@ -169,18 +178,29 @@ function giveKudos(app) {
           },
           {
             type: "input",
-            block_id: "kudo_amount_block",
+            block_id: "numeric_select",
             label: {
               type: "plain_text",
               text: "How many kudos do you want to give?",
             },
             element: {
-              type: "plain_text_input",
-              action_id: "kudo_points",
-              multiline: true,
-              initial_value: "1",
-            },
-          },
+              type: "static_select",
+              action_id: "number_pick",
+              placeholder: {
+                type: "plain_text",
+                text: "How many kudos do you want to give?"
+              },
+              options: [
+                { text: { type: "plain_text", text: "1" }, value: "1" },
+                { text: { type: "plain_text", text: "2" }, value: "2" },
+                { text: { type: "plain_text", text: "3" }, value: "3" },
+                { text: { type: "plain_text", text: "4" }, value: "4" },
+                { text: { type: "plain_text", text: "5" }, value: "5" }
+              ],
+              initial_option: { text: { type: "plain_text", text: "1" }, value: "1" }
+            }
+          }
+          ,
           {
             type: "input",
             block_id: "kudo_message_block",
@@ -318,17 +338,26 @@ function viewKudosModal(app) {
           },
           {
             type: "input",
-            block_id: "kudo_amount_block",
+            block_id: "numeric_select",
             label: {
               type: "plain_text",
               text: "How many kudos do you want to give?",
             },
             element: {
-              type: "plain_text_input",
-              action_id: "kudo_points",
-              multiline: true,
-              initial_value: "1",
-            },
+              type: "static_select",
+              action_id: "number_pick",
+              placeholder: {
+                type: "plain_text",
+                text: "How many kudos do you want to give?"
+              },
+              options: [
+                { text: { type: "plain_text", text: "1" }, value: "1" },
+                { text: { type: "plain_text", text: "2" }, value: "2" },
+                { text: { type: "plain_text", text: "3" }, value: "3" },
+                { text: { type: "plain_text", text: "4" }, value: "4" },
+                { text: { type: "plain_text", text: "5" }, value: "5" }
+              ]
+            }
           },
           {
             type: "input",
