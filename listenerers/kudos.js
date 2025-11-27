@@ -425,13 +425,20 @@ function checkGiveawayKudos(app) {
     await ack();
 
     try {
-      const response = await fetch(
+      const giveawayResponse = await fetch(
         `${url}/user/${body.user_id}/kudos/giveaway`
       );
-      const data = await response.json();
+      const kudosResponse = await fetch(
+        `${url}/user/${body.user_id}/kudos/kudos`
+      );
+      const giveawwayData = await giveawayResponse.json();
+      const kudosData = await kudosResponse.json();
+
+
+
       const userInfo = await client.users.info({ user: body.user_id });
       const username = userInfo.user.profile.display_name || userInfo.user.name;
-      await say(`${username} - giveaway-kudos: ${data.total_kudos}`);
+      await say(`${username} - giveaway-kudos: ${giveawwayData.total_kudos} kudos, regular kudos: ${kudosData.total_kudos} kudos.`);
     } catch (error) {
       console.error(error);
       await say("Kon de user niet ophalen 😿");
