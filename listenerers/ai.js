@@ -68,7 +68,6 @@ async function aiChecker(userMessage) {
       Message: "${userMessage}"
     `,
   });
-  console.log("AI Response:", response.output_text);
   const aiAnswer = response.output_text.trim();
 
   if (aiAnswer === "no") {

@@ -11,44 +11,48 @@ function kudosRecommendation(app) {
   app.message(async ({ message, say, ack }) => {
     channelID = message.channel;
     try {
-      if (!message.text || message.subtype === "bot_message") return;
+      if (!message.text || message.subtype === "bot_message") return
 
       const { aiAnswer } = await aiChecker(message.text);
 
-      if (aiAnswer !== "no" || aiAnswer !== undefined) {
-        matchedSlackUser = await extractName(message.text);
-        // console.log("Matched Slack User:", matchedSlackUser);
-        // console.log("Extracted Name:", matchedSlackUser?.id === undefined ? "undefined" : matchedSlackUser.name);
-        matchedSlackUser = await fuzzyMatchSlackUser(matchedSlackUser);
-        if (!matchedSlackUser) {
-          // console.log("No suitable Slack user match found.");
-          matchedSlackUser = { id: undefined, name: undefined };
-        }
-        // console.log("Matched Slack User ID:", matchedSlackUser?.id);
-        // LastKudosData = { aiAnswer, matchedSlackUserID };
-        // console.log("LastKudosData updated HIERO:", LastKudosData);
-        // say() sends a message to the channel where the event was triggered
-        await say({
-          blocks: [
-            {
-              type: "section",
-              text: {
-                type: "mrkdwn",
-                text: `${aiAnswer}`,
-              },
-              accessory: {
-                type: "button",
-                text: {
-                  type: "plain_text",
-                  text: "Give Kudos",
-                },
-                action_id: "button_click",
-              },
-            },
-          ],
-          text: `Hey there <@${message.user}>!`,
-        });
+      if (aiAnswer === undefined || aiAnswer === "no") {
+        console.log("AI did not detect a gratitude message.");
+        return;
       }
+
+      console.log("AI detected gratitude message. message: " + aiAnswer);
+      matchedSlackUser = await extractName(message.text);
+      // console.log("Matched Slack User:", matchedSlackUser);
+      // console.log("Extracted Name:", matchedSlackUser?.id === undefined ? "undefined" : matchedSlackUser.name);
+      matchedSlackUser = await fuzzyMatchSlackUser(matchedSlackUser);
+      if (!matchedSlackUser) {
+        // console.log("No suitable Slack user match found.");
+        matchedSlackUser = { id: undefined, name: undefined };
+      }
+      // console.log("Matched Slack User ID:", matchedSlackUser?.id);
+      // LastKudosData = { aiAnswer, matchedSlackUserID };
+      // console.log("LastKudosData updated HIERO:", LastKudosData);
+      // say() sends a message to the channel where the event was triggered
+      await say({
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `${aiAnswer}`,
+            },
+            accessory: {
+              type: "button",
+              text: {
+                type: "plain_text",
+                text: "Give Kudos",
+              },
+              action_id: "button_click",
+            },
+          },
+        ],
+        text: `Hey there <@${message.user}>!`,
+      });
     } catch (err) {
       console.error("Error in message handler:", err);
     }
@@ -59,7 +63,7 @@ function kudosRecommendation(app) {
     await ack();
 
     // channelID = body.channel_id;
-    console.log("Channel ID:", channelID);
+    // console.log("Channel ID:", channelID);
 
     await client.views.open({
       trigger_id: body.trigger_id,
