@@ -24,7 +24,7 @@ async function extractName(aiMessage) {
 
 // --- Helper: fuzzy match name to Slack user list ---
 async function fuzzyMatchSlackUser(name) {
-  if (!name) return null;
+  if (!name) return undefined;
 
   const users = await slack.users.list();
   const realUsers = users.members
@@ -36,14 +36,14 @@ async function fuzzyMatchSlackUser(name) {
   const match = stringSimilarity.findBestMatch(name, names);
   
   // Require a decent confidence score
-  if (match.bestMatch.rating < 0.4) return null;
+  if (match.bestMatch.rating < 0.4) return undefined;
 
   return realUsers.find(u => u.name === match.bestMatch.target);
 }
 
 // --- MAIN FUNCTION ---
 async function aiChecker(userMessage) {
-  if (!userMessage) return { ai: "no", matchedUser: null };
+  if (!userMessage) return { ai: "no", matchedUser: undefined };
 
   // STEP 1: Ask AI whether it's gratitude + generate friendly reply
   const response = await openai.responses.create({
@@ -72,7 +72,7 @@ async function aiChecker(userMessage) {
   const aiAnswer = response.output_text.trim();
 
   if (aiAnswer === "no") {
-    return { ai: "no", matchedUser: null };
+    return { ai: "no", matchedUser: undefined };
   }
 
   // // STEP 2: Extract name from AI output (invisible to user)

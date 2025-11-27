@@ -2,23 +2,29 @@ const url = "https://kudos-api.guusn.nl";
 
 import { aiChecker, extractName, fuzzyMatchSlackUser } from "./ai.js";
 // let LastKudosData = { aiAnswer: "bla bla bla", matchedSlackUserID: "U09HW1A2YR5" };
-let aiAnswer = "yes";
-let matchedSlackUser = {id: "", name: ""};
-let channelID = null;
+let aiAnswer = "";
+let matchedSlackUser = {id: undefined, name: undefined};
+let channelID = undefined;
 
 function kudosRecommendation(app) {
   // Listens to incoming messages that contain "hello"
-  app.message(async ({ message, say, ack }) => {
+  app.message(async ({ message, say, ack}) => {
+    channelID = message.channel;
     try {
       if (!message.text || message.subtype === "bot_message") return;
 
-      // const { aiAnswer } = await aiChecker(message.text);
+      const { aiAnswer } = await aiChecker(message.text);
 
       if (aiAnswer !== "no") {
         matchedSlackUser = await extractName(message.text);
-        console.log("Matched Slack User:", matchedSlackUser);
+        // console.log("Matched Slack User:", matchedSlackUser);
+        // console.log("Extracted Name:", matchedSlackUser?.id === undefined ? "undefined" : matchedSlackUser.name);
         matchedSlackUser = await fuzzyMatchSlackUser(matchedSlackUser);
-        console.log("Matched Slack User ID:", matchedSlackUser.id);
+        if (!matchedSlackUser) {
+          // console.log("No suitable Slack user match found.");
+          matchedSlackUser = {id: undefined, name: undefined};
+        }
+        // console.log("Matched Slack User ID:", matchedSlackUser?.id);
         // LastKudosData = { aiAnswer, matchedSlackUserID };
         // console.log("LastKudosData updated HIERO:", LastKudosData);
         // say() sends a message to the channel where the event was triggered
@@ -52,7 +58,7 @@ function kudosRecommendation(app) {
     // Acknowledge the action
     await ack();
 
-    channelID = body.channel_id;
+    // channelID = body.channel_id;
     console.log("Channel ID:", channelID);
 
     await client.views.open({
@@ -112,7 +118,7 @@ function kudosRecommendation(app) {
               type: "plain_text_input",
               action_id: "kudo_message",
               multiline: true,
-              initial_value: "Test",
+              initial_value: "Thank you for your help!",
             },
           },
         ],
