@@ -431,37 +431,22 @@ function checkGiveawayKudos(app) {
       );
       const giveawwayData = await giveawayResponse.json();
       const kudosData = await kudosResponse.json();
+      console.log(giveawwayData, kudosData);
 
-      const userInfo = await client.users.info({ user: body.user_id });
-      const username = userInfo.user.profile.display_name || userInfo.user.name;
-      await say({
+      await client.chat.postEphemeral({
+        channel: body.channel_id,
+        user: body.user_id,
+        text: "Your kudos summary",
         blocks: [
           {
-            type: "rich_text",
-            elements: [
-              {
-                type: "rich_text_quote",
-                elements: [
-                  {
-                    type: "rich_text_section",
-                    elements: [
-                      {
-                        type: "text",
-                        text: `⭐ *Your Kudos Summary* ⭐\n`
-                      },
-                      {
-                        type: "text",
-                        text: `\n🎁 *Giveaway Kudos:* ${giveawwayData.total_kudos}\n`
-                      },
-                      {
-                        type: "text",
-                        text: `💛 *Regular Kudos:* ${kudosData.total_kudos}\n`
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `⭐ *${body.user_name}'s Kudos Summary* ⭐
+      
+      🎁 *Giveaway Kudos:* ${giveawwayData.total_kudos}
+      💛 *Regular Kudos:* ${kudosData.total_kudos}`
+            }
           }
         ],
         text: "User kudos summary"
