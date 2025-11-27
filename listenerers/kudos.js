@@ -3,12 +3,12 @@ const url = "https://kudos-api.guusn.nl";
 import { aiChecker, extractName, fuzzyMatchSlackUser } from "./ai.js";
 // let LastKudosData = { aiAnswer: "bla bla bla", matchedSlackUserID: "U09HW1A2YR5" };
 let aiAnswer = "";
-let matchedSlackUser = {id: undefined, name: undefined};
+let matchedSlackUser = { id: undefined, name: undefined };
 let channelID = undefined;
 
 function kudosRecommendation(app) {
   // Listens to incoming messages that contain "hello"
-  app.message(async ({ message, say, ack}) => {
+  app.message(async ({ message, say, ack }) => {
     channelID = message.channel;
     try {
       if (!message.text || message.subtype === "bot_message") return;
@@ -22,7 +22,7 @@ function kudosRecommendation(app) {
         matchedSlackUser = await fuzzyMatchSlackUser(matchedSlackUser);
         if (!matchedSlackUser) {
           // console.log("No suitable Slack user match found.");
-          matchedSlackUser = {id: undefined, name: undefined};
+          matchedSlackUser = { id: undefined, name: undefined };
         }
         // console.log("Matched Slack User ID:", matchedSlackUser?.id);
         // LastKudosData = { aiAnswer, matchedSlackUserID };
@@ -260,9 +260,8 @@ function viewKudosModal(app) {
         console.error(`Failed: ${response.status} - ${responseData.error}`);
         await client.chat.postMessage({
           channel: channel,
-          text: `Kon de transactie niet uitvoeren: ${
-            responseData.error || "Onbekende fout"
-          } 😿`,
+          text: `Kon de transactie niet uitvoeren: ${responseData.error || "Onbekende fout"
+            } 😿`,
         });
       }
     } catch (error) {
@@ -405,9 +404,8 @@ function viewKudosModal(app) {
         console.error(`Failed: ${response.status} - ${responseData.error}`);
         await client.chat.postMessage({
           channel: channel,
-          text: `Kon de transactie niet uitvoeren: ${
-            responseData.error || "Onbekende fout"
-          } 😿`,
+          text: `Kon de transactie niet uitvoeren: ${responseData.error || "Onbekende fout"
+            } 😿`,
         });
       }
     } catch (error) {
@@ -442,13 +440,24 @@ function checkGiveawayKudos(app) {
             type: "rich_text",
             elements: [
               {
-                type: "rich_text_section",
+                type: "rich_text_quote",
                 elements: [
                   {
-                    type: "text",
-                    text: `Giveaway Kudos - ${giveawwayData.total_kudos} , 
-                    \n\n
-                    Regular Kudos - ${kudosData.total_kudos} `,
+                    type: "rich_text_section",
+                    elements: [
+                      {
+                        type: "text",
+                        text: `⭐ *Your Kudos Summary* ⭐\n`
+                      },
+                      {
+                        type: "text",
+                        text: `\n🎁 *Giveaway Kudos:* ${giveawwayData.total_kudos}\n`
+                      },
+                      {
+                        type: "text",
+                        text: `💛 *Regular Kudos:* ${kudosData.total_kudos}\n`
+                      }
+                    ]
                   }
                 ]
               }
@@ -457,6 +466,7 @@ function checkGiveawayKudos(app) {
         ],
         text: "User kudos summary"
       });
+
       // await say(`${username} - giveaway-kudos: ${giveawwayData.total_kudos} kudos, regular kudos: ${kudosData.total_kudos} kudos.`);
     } catch (error) {
       console.error(error);
