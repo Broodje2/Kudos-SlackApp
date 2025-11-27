@@ -420,7 +420,8 @@ function viewKudosModal(app) {
 
 function checkGiveawayKudos(app) {
   app.command("/mykudos", async ({ ack, body, client, say }) => {
-    await ack();
+    ack();
+    console.log("Checking kudos for user:", body.user_id);
 
     try {
       const giveawayResponse = await fetch(
