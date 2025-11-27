@@ -15,7 +15,7 @@ function kudosRecommendation(app) {
 
       const { aiAnswer } = await aiChecker(message.text);
 
-      if (aiAnswer !== "no") {
+      if (aiAnswer !== "no" || aiAnswer !== undefined) {
         matchedSlackUser = await extractName(message.text);
         // console.log("Matched Slack User:", matchedSlackUser);
         // console.log("Extracted Name:", matchedSlackUser?.id === undefined ? "undefined" : matchedSlackUser.name);
