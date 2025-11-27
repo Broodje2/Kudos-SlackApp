@@ -20,10 +20,15 @@ const app = new App({
 
 registerListeners(app);
 
-app.command("/help", async ({ ack, say }) => {
+app.command("/help", async ({ ack, client, body }) => {
   await ack();
+  // console.log("Help command invoked by user:", body.user_id);
+  // console.log("In channel:", body.channel_id);
 
-  await say({
+  await client.chat.postEphemeral({
+    channel: body.channel_id,
+    user: body.user_id,
+    text: `🎉 <@${body.user_id}> showed the helps command`,
     blocks: [
       {
         type: "header",
@@ -44,8 +49,7 @@ app.command("/help", async ({ ack, say }) => {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "• /kudo - Send kudos to a teammates",
-          text: "• /givekudos - Send kudos to a teammates",
+          text: "• /kudos - Send kudos to a teammates",
         },
       },
       { type: "divider" },
@@ -61,7 +65,7 @@ app.command("/help", async ({ ack, say }) => {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "• /giveawaykudos -     Shows the amount of giveaway kudos of the user",
+          text: "• /mykudos - Shows the (giveaway)kudos you currently have",
         },
       },
        { type: "divider" },
@@ -69,23 +73,7 @@ app.command("/help", async ({ ack, say }) => {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "• /sync -     Sync all users with database",
-        },
-      },
-       { type: "divider" },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "• /getuser -     Get your user info from the database (for testing)",
-        },
-      },
-       { type: "divider" },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "• /registeraccount -         Register account if not done correctly in /sync (or for testing)",
+          text: "• /shop - Browse the kudos shop",
         },
       },
     ],

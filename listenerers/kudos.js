@@ -339,7 +339,7 @@ function viewKudosModal(app) {
               type: "plain_text_input",
               action_id: "kudo_message",
               multiline: true,
-              initial_value: "Test",
+              initial_value: "Thank you for your help!",
             },
           },
         ],
@@ -421,7 +421,7 @@ function viewKudosModal(app) {
 }
 
 function checkGiveawayKudos(app) {
-  app.command("/giveawaykudos", async ({ ack, body, client, say }) => {
+  app.command("/mykudos", async ({ ack, body, client, say }) => {
     await ack();
 
     try {
