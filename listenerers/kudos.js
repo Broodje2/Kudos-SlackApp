@@ -1,15 +1,26 @@
 const url = "https://kudos-api.guusn.nl";
 
-import { aiChecker } from "./ai.js";
+import { aiChecker, extractName, fuzzyMatchSlackUser } from "./ai.js";
+// let LastKudosData = { aiAnswer: "bla bla bla", matchedSlackUserID: "U09HW1A2YR5" };
+let aiAnswer = "yes";
+let matchedSlackUser = {id: "", name: ""};
+let channelID = null;
 
 function kudosRecommendation(app) {
   // Listens to incoming messages that contain "hello"
   app.message(async ({ message, say, ack }) => {
     try {
       if (!message.text || message.subtype === "bot_message") return;
-      const aiAnswer = await aiChecker(message.text);
+
+      // const { aiAnswer } = await aiChecker(message.text);
 
       if (aiAnswer !== "no") {
+        matchedSlackUser = await extractName(message.text);
+        console.log("Matched Slack User:", matchedSlackUser);
+        matchedSlackUser = await fuzzyMatchSlackUser(matchedSlackUser);
+        console.log("Matched Slack User ID:", matchedSlackUser.id);
+        // LastKudosData = { aiAnswer, matchedSlackUserID };
+        // console.log("LastKudosData updated HIERO:", LastKudosData);
         // say() sends a message to the channel where the event was triggered
         await say({
           blocks: [
@@ -41,6 +52,9 @@ function kudosRecommendation(app) {
     // Acknowledge the action
     await ack();
 
+    channelID = body.channel_id;
+    console.log("Channel ID:", channelID);
+
     await client.views.open({
       trigger_id: body.trigger_id,
       view: {
@@ -60,7 +74,7 @@ function kudosRecommendation(app) {
             element: {
               type: "users_select",
               action_id: "doer_of_good_deeds",
-              initial_user: "U09JQCAF8AV",
+              initial_user: matchedSlackUser.id === "" ? "none" : matchedSlackUser.id,
             },
           },
           {
@@ -73,7 +87,7 @@ function kudosRecommendation(app) {
             element: {
               type: "conversations_select",
               action_id: "kudo_channel",
-              initial_conversation: "C09QPC7SPSR",
+              initial_conversation: channelID,
             },
           },
           {
@@ -107,8 +121,9 @@ function kudosRecommendation(app) {
   });
 }
 function giveKudos(app) {
-  app.command("/givekudos", async ({ ack, body, client }) => {
+  app.command("/kudos", async ({ ack, body, client }) => {
     await ack();
+    channelID = body.channel_id;
 
     // Open a modal
     await client.views.open({
@@ -130,7 +145,7 @@ function giveKudos(app) {
             element: {
               type: "users_select",
               action_id: "doer_of_good_deeds",
-              initial_user: "U09JQCAF8AV",
+              initial_user: matchedSlackUser.id === "" ? undefined : matchedSlackUser.id,
             },
           },
           {
@@ -143,7 +158,7 @@ function giveKudos(app) {
             element: {
               type: "conversations_select",
               action_id: "kudo_channel",
-              initial_conversation: "C09QPC7SPSR",
+              initial_conversation: channelID,
             },
           },
           {
@@ -168,7 +183,7 @@ function giveKudos(app) {
               type: "plain_text_input",
               action_id: "kudo_message",
               multiline: true,
-              initial_value: "Test",
+              initial_value: "Thank you for your help!",
             },
           },
         ],
@@ -225,7 +240,7 @@ function viewKudosModal(app) {
                 type: "button",
                 text: {
                   type: "plain_text",
-                  text: "Also give kudos",
+                  text: "Give Kudos",
                 },
                 action_id: "button_click_kudos",
                 value: JSON.stringify({
