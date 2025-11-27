@@ -20,39 +20,30 @@ function leaderboard(app) {
         hour: "2-digit",
         minute: "2-digit",
       });
-      await client.chat.postEphemeral({
-        channel: body.channel_id,
-        user: body.user_id,
-        blocks: [
-          {
-            type: "header",
-            text: {
-              type: "plain_text",
-              text: `Leaderboard 🏆 - ${toLocaleDateString}`,
-            },
-          },
-          { type: "divider" },
-        ],
-        text: "Leaderboard",
-      });
-
+      
+      // Build all leaderboard lines as text (one big message)
+      const lines = [];
       for (let i = 0; i < data.length; i++) {
-        const userInfo = await client.users.info({ user: data[i].slack_id });
+        const item = data[i];
+        const userInfo = await client.users.info({ user: item.slack_id });
         const username =
           userInfo.user.profile.display_name || userInfo.user.name;
 
-        await client.chat.postEphemeral({
-          channel: body.channel_id,
-          user: body.user_id,
-          text: `${username} - Kudos: ${data[i].total_kudos}`,
-        });
+        lines.push(`*${i + 1}. ${username}* – Kudos: ${item.total_kudos}`);
       }
+
+      // One single ephemeral message, visible only to the user
+      await client.chat.postEphemeral({
+        channel: body.channel_id,     // works in any channel the command is used
+        user: body.user_id,          // only visible to the requester
+        text: `Leaderboard 🏆 - ${toLocaleDateString}\n\n${lines.join("\n")}`,
+      });
     } catch (error) {
-      console.error(error);
+      console.error("Error in /leaderboard:", error);
       await client.chat.postEphemeral({
         channel: body.channel_id,
         user: body.user_id,
-        text: "Kon de user niet ophalen 😿",
+        text: "Kon de leaderboard niet ophalen 😿",
       });
     }
   });
