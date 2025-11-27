@@ -436,7 +436,28 @@ function checkGiveawayKudos(app) {
 
       const userInfo = await client.users.info({ user: body.user_id });
       const username = userInfo.user.profile.display_name || userInfo.user.name;
-      await say(`${username} - giveaway-kudos: ${giveawwayData.total_kudos} kudos, regular kudos: ${kudosData.total_kudos} kudos.`);
+      await say({
+        blocks: [
+          {
+            type: "rich_text",
+            elements: [
+              {
+                type: "rich_text_section",
+                elements: [
+                  {
+                    type: "text",
+                    text: `Giveaway Kudos - ${giveawwayData.total_kudos} , 
+                    \n\n
+                    Regular Kudos - ${kudosData.total_kudos} `,
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        text: "User kudos summary"
+      });
+      // await say(`${username} - giveaway-kudos: ${giveawwayData.total_kudos} kudos, regular kudos: ${kudosData.total_kudos} kudos.`);
     } catch (error) {
       console.error(error);
       await say("Kon de user niet ophalen 😿");
