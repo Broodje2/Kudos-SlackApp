@@ -434,8 +434,6 @@ function checkGiveawayKudos(app) {
       const giveawwayData = await giveawayResponse.json();
       const kudosData = await kudosResponse.json();
 
-
-
       const userInfo = await client.users.info({ user: body.user_id });
       const username = userInfo.user.profile.display_name || userInfo.user.name;
       await say(`${username} - giveaway-kudos: ${giveawwayData.total_kudos} kudos, regular kudos: ${kudosData.total_kudos} kudos.`);

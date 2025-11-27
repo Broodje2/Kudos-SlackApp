@@ -9,7 +9,7 @@ function leaderboard(app) {
       // const username = userInfo.user.profile.display_name || userInfo.user.name;
       // await say(`*• ${username}*\n Kudos: ${user.total_kudos}`);
 
-      const response = await fetch(`${url}/leaderboard`);
+      const response = await fetch(`${url}/leaderboard/currentTimeframe`);
       const data = await response.json();
 
       const now = new Date();
