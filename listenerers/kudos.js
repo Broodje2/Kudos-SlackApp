@@ -2,14 +2,13 @@ const url = "https://kudos-api.guusn.nl";
 
 import { aiChecker, extractName, fuzzyMatchSlackUser } from "./ai.js";
 // let LastKudosData = { aiAnswer: "bla bla bla", matchedSlackUserID: "U09HW1A2YR5" };
-let aiAnswer = "";
-let matchedSlackUser = { id: undefined, name: undefined };
-let channelID = undefined;
+// let matchedSlackUser = { id: undefined, name: undefined };
+// let channelID = undefined;
 
 function kudosRecommendation(app) {
   // Listens to incoming messages that contain "hello"
   app.message(async ({ message, say, ack }) => {
-    channelID = message.channel;
+
     try {
       if (!message.text || message.subtype === "bot_message") return
 
@@ -21,7 +20,7 @@ function kudosRecommendation(app) {
       }
 
       console.log("AI detected gratitude message. message: " + aiAnswer);
-      matchedSlackUser = await extractName(message.text);
+      let matchedSlackUser = await extractName(message.text);
       // console.log("Matched Slack User:", matchedSlackUser);
       // console.log("Extracted Name:", matchedSlackUser?.id === undefined ? "undefined" : matchedSlackUser.name);
       matchedSlackUser = await fuzzyMatchSlackUser(matchedSlackUser);
@@ -29,6 +28,8 @@ function kudosRecommendation(app) {
         // console.log("No suitable Slack user match found.");
         matchedSlackUser = { id: undefined, name: undefined };
       }
+      const buttonValue = JSON.stringify({ matchedUserId: matchedSlackUser.id ?? undefined, channelId: message.channel });
+      // console.log("AI Answer:", aiAnswer);
       // console.log("Matched Slack User ID:", matchedSlackUser?.id);
       // LastKudosData = { aiAnswer, matchedSlackUserID };
       // console.log("LastKudosData updated HIERO:", LastKudosData);
@@ -48,6 +49,7 @@ function kudosRecommendation(app) {
                 text: "Give Kudos",
               },
               action_id: "button_click",
+              value: buttonValue,
             },
           },
         ],
@@ -64,6 +66,21 @@ function kudosRecommendation(app) {
 
     // channelID = body.channel_id;
     // console.log("Channel ID:", channelID);
+
+    // const actionValue = JSON.parse(body.actions[0].value) || undefined;
+    let actionValue = {};
+    let matchedUserId = undefined;
+    let channelId = undefined;
+    try {
+      actionValue = JSON.parse(body.actions[0].value);
+      matchedUserId = actionValue.matchedUserId ?? undefined;
+      channelId = actionValue.channelId ?? (body.channel && body.channel.id) ?? undefined;
+
+    } catch (e) { 
+      // Negeer JSON parse fouten, waarschijnlijke oude button clicks
+    }
+
+
 
     await client.views.open({
       trigger_id: body.trigger_id,
@@ -84,7 +101,7 @@ function kudosRecommendation(app) {
             element: {
               type: "users_select",
               action_id: "doer_of_good_deeds",
-              initial_user: matchedSlackUser.id === "" ? "none" : matchedSlackUser.id,
+              initial_user: matchedUserId ? matchedUserId : undefined,
             },
           },
           {
@@ -97,7 +114,7 @@ function kudosRecommendation(app) {
             element: {
               type: "conversations_select",
               action_id: "kudo_channel",
-              initial_conversation: channelID,
+              initial_conversation: channelId ? channelId : undefined,
             },
           },
           {
@@ -142,7 +159,7 @@ function kudosRecommendation(app) {
 function giveKudos(app) {
   app.command("/kudos", async ({ ack, body, client }) => {
     await ack();
-    channelID = body.channel_id;
+    const channelId = body.channel_id;
 
     // Open a modal
     await client.views.open({
@@ -164,7 +181,6 @@ function giveKudos(app) {
             element: {
               type: "users_select",
               action_id: "doer_of_good_deeds",
-              initial_user: matchedSlackUser.id === "" ? undefined : matchedSlackUser.id,
             },
           },
           {
@@ -177,7 +193,7 @@ function giveKudos(app) {
             element: {
               type: "conversations_select",
               action_id: "kudo_channel",
-              initial_conversation: channelID,
+              initial_conversation: channelId ? channelId : undefined,
             },
           },
           {
@@ -226,13 +242,11 @@ function viewKudosModal(app) {
   app.view("give_kudos_modal", async ({ ack, body, view, client }) => {
     await ack();
 
-    const destination_id =
-      view.state.values.doer_of_good_deeds_block.doer_of_good_deeds
-        .selected_user;
-    const channel =
-      view.state.values.kudo_channel_block.kudo_channel.selected_conversation;
+    const destination_id = view.state.values.doer_of_good_deeds_block.doer_of_good_deeds.selected_user;
+    const channel = view.state.values.kudo_channel_block.kudo_channel.selected_conversation;
     const reason = view.state.values.kudo_message_block.kudo_message.value;
-    const amount = view.state.values.kudo_amount_block.kudo_points.value;
+    // const amount = view.state.values.kudo_amount_block.kudo_points.value;
+    const amount = view.state.values.numeric_select.number_pick.selected_option.value;
     const origin_id = body.user.id;
 
     try {
@@ -337,7 +351,7 @@ function viewKudosModal(app) {
             element: {
               type: "conversations_select",
               action_id: "kudo_channel",
-              initial_conversation: "C09K5NA0PNU",
+              initial_conversation: body.channel.id,
             },
           },
           {
@@ -388,7 +402,8 @@ function viewKudosModal(app) {
     const channel =
       view.state.values.kudo_channel_block.kudo_channel.selected_conversation;
     const reason = view.state.values.kudo_message_block.kudo_message.value;
-    const amount = view.state.values.kudo_amount_block.kudo_points.value;
+    // const amount = view.state.values.kudo_amount_block.kudo_points.value;
+    const amount = view.state.values.numeric_select.number_pick.selected_option.value;
     const origin_id = body.user.id;
 
     try {
