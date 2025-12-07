@@ -6,6 +6,8 @@ A bot to add some friendly rivalry to your team
 
 This is a Slack app built with the [Bolt for JavaScript framework][2] and openAi integrated to have smart and dynamic responses. The main purpose 
 is to add a friendly game to your work environment where people can award eachother with points for anything. The app has a built in economy and people have to battle for their spot on the leaderboard.
+<img width="587" height="102" alt="image" src="https://github.com/user-attachments/assets/2966a0a9-929b-49ae-9aeb-153d03f45a72" />
+
 
 ## Functionality
 
@@ -54,6 +56,13 @@ To run the bot locally, run the following command:
 ```bash
 npm run start
 ```
+
+### What you need to run everything for yourself
+
+To actually use the project for you team you will need the following things:
+- A database
+- The backend API: https://git.fhict.nl/I539197/kudos-backend/-/tree/Development?ref_type=heads
+- A server to run the backend and database
 
 ## Authors and acknowledgement
 
