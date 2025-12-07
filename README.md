@@ -62,7 +62,7 @@ npm run start
 To actually use the project for you team you will need the following things:
 - A database
 - The backend API: https://git.fhict.nl/I539197/kudos-backend/-/tree/Development?ref_type=heads
-- A server to run the backend and database
+- Change the url variable to the link you run the backend on (f.e. localhost:3000)
 
 ## Authors and acknowledgement
 
