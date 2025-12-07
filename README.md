@@ -14,6 +14,15 @@ is to add a friendly game to your work environment where people can award eachot
 - A leaderboard
 - A shop with custom items
 
+## Project purpose
+
+The purpose of this project was to make a interesting way to use the flipdotboard in the office of OWOW.
+
+## Tools that were used
+
+- Bolt for JavaScript framework
+- OpenAI
+
 ## Installing
 
 First you have to clone the repository in your code editor, preferably Visual Studio Code
@@ -28,7 +37,7 @@ Then go in the folder you downloaded
 cd /Kudos-SlackApp
 ```
 
-And lastly install all dependencies
+### And lastly install all dependencies
 
 ```bash
 npm install
@@ -45,3 +54,11 @@ To run the bot locally, run the following command:
 ```bash
 npm run start
 ```
+
+## Authors and acknowledgement
+
+This app was made by Guus Nohlmans, Radu Ghimp and Niels Dresselaerts
+
+## Project status
+
+The project is close to being finished, the deadline is the 10th of December
